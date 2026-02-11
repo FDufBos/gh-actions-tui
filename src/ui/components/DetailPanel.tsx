@@ -2,7 +2,7 @@ import { Box, Text } from "ink";
 import Spinner from "ink-spinner";
 import { displayRank, summaryByCategory } from "../../domain/rollup";
 import type { Check, CheckCategory, PullRequest, ReviewDecision } from "../../domain/types";
-import { colors } from "../theme";
+import { blendOnBg, colors } from "../theme";
 import { ProgressBar } from "./ProgressBar";
 import { reviewColor, reviewLabel, statusColor, statusToken } from "./status";
 
@@ -21,10 +21,12 @@ type Props = {
 const MAX_VISIBLE = 12;
 
 export function DetailPanel(props: Props) {
+  const isFocused = props.focused;
+
   if (!props.selectedPr) {
     return (
       <Box flexDirection="column" paddingX={1} minHeight={4}>
-        <Text color={colors.dim}>Select a PR and press enter to load details.</Text>
+        <Text color={isFocused ? colors.dim : colors.border}>Select a PR and press enter to load details.</Text>
       </Box>
     );
   }
@@ -53,12 +55,13 @@ export function DetailPanel(props: Props) {
 
   const safeCursor = Math.max(0, Math.min(props.cursor, Math.max(0, listItems.length - 1)));
   const inProgressCount = summary.running + summary.queued + summary.pending;
+  const faded = (color: string) => blendOnBg(color, 0.2);
 
   const chartSegments = [
-    { value: inProgressCount, color: colors.yellow },
-    { value: summary.failed, color: colors.red },
-    { value: summary.passed, color: colors.green },
-    { value: summary.skipped + summary.cancelled, color: colors.border },
+    { value: inProgressCount, color: isFocused ? colors.yellow : faded(colors.yellow) },
+    { value: summary.failed, color: isFocused ? colors.red : faded(colors.red) },
+    { value: summary.passed, color: isFocused ? colors.green : faded(colors.green) },
+    { value: summary.skipped + summary.cancelled, color: isFocused ? colors.border : faded(colors.border) },
   ];
 
   // Windowed slice for the visible list
@@ -69,24 +72,28 @@ export function DetailPanel(props: Props) {
 
   const rvLabel = reviewLabel(props.reviewDecision);
   const rvColor = reviewColor(props.reviewDecision);
+  const headerColor = isFocused ? colors.text : colors.border;
+  const linkColor = isFocused ? colors.dim : colors.border;
+  const rollupBaseColor = statusColor(props.rollupCategory);
+  const rollupTokenColor = isFocused ? rollupBaseColor : faded(rollupBaseColor);
 
   return (
     <Box flexDirection="column" paddingX={1}>
       {/* Header row — PR title + review + open link */}
       <Box>
-        <Text color={statusColor(props.rollupCategory)}>{statusToken(props.rollupCategory)}</Text>
+        <Text color={rollupTokenColor}>{statusToken(props.rollupCategory)}</Text>
         <Text>{" "}</Text>
-        <Text color={colors.text} bold>
+        <Text color={headerColor} bold={isFocused}>
           {pr.title}
         </Text>
         {rvLabel ? (
           <Text>
             {"  "}
-            <Text color={rvColor}>{rvLabel}</Text>
+            <Text color={isFocused ? rvColor : faded(rvColor)}>{rvLabel}</Text>
           </Text>
         ) : null}
         <Box flexGrow={1} />
-        <Text color={colors.dim}>[o] open in Github</Text>
+        <Text color={linkColor}>[o] Open PR</Text>
       </Box>
 
       {/* Progress bar */}
@@ -96,28 +103,31 @@ export function DetailPanel(props: Props) {
       {/* Check list */}
       <Box flexDirection="column" marginTop={1}>
         {props.loading && listItems.length === 0 ? (
-          <Text color={colors.dim}>
+          <Text color={isFocused ? colors.dim : colors.border}>
             <Spinner type="dots" /> loading…
           </Text>
         ) : listItems.length === 0 ? (
-          <Text color={colors.dim}>No data for this tab.</Text>
+          <Text color={isFocused ? colors.dim : colors.border}>No data for this tab.</Text>
         ) : (
           visibleItems.map((item) => {
-            const isSelected = listItems.indexOf(item) === safeCursor;
+            const isSelected = isFocused && listItems.indexOf(item) === safeCursor;
+            const itemBaseColor = statusColor(item.category);
+            const itemStatusColor = isFocused ? itemBaseColor : faded(itemBaseColor);
+            const itemLabelColor = isFocused ? (isSelected ? colors.text : colors.dim) : colors.border;
             return (
               <Box key={item.key}>
                 <Text color={isSelected ? colors.text : undefined}>
-                  <Text color={statusColor(item.category)}>{statusToken(item.category)}</Text>
-                  <Text color={isSelected ? colors.text : colors.dim}> {item.label}</Text>
+                  <Text color={itemStatusColor}>{statusToken(item.category)}</Text>
+                  <Text color={itemLabelColor}> {item.label}</Text>
                 </Text>
                 <Box flexGrow={1} />
-                {item.required ? <Text color={colors.dim}>Required</Text> : null}
+                {item.required ? <Text color={isFocused ? colors.dim : colors.border}>Required</Text> : null}
               </Box>
             );
           })
         )}
         {hiddenBelow > 0 ? (
-          <Text color={colors.dim}>{"  \u02C5 "}{hiddenBelow} more</Text>
+          <Text color={isFocused ? colors.dim : colors.border}>{"  \u02C5 "}{hiddenBelow} more</Text>
         ) : null}
       </Box>
     </Box>

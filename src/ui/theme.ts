@@ -21,3 +21,34 @@ export const colors = {
   /** Primary foreground text */
   text: "#DCDCDC",
 } as const;
+
+function hexToRgb(hex: string): [number, number, number] {
+  const normalized = hex.trim().replace(/^#/, "");
+  if (!/^[0-9A-Fa-f]{6}$/.test(normalized)) {
+    return [0, 0, 0];
+  }
+  const r = Number.parseInt(normalized.slice(0, 2), 16);
+  const g = Number.parseInt(normalized.slice(2, 4), 16);
+  const b = Number.parseInt(normalized.slice(4, 6), 16);
+  return [r, g, b];
+}
+
+function rgbToHex([r, g, b]: [number, number, number]): string {
+  const toHex = (n: number) => n.toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+/**
+ * Simulates opacity for terminal colors by blending a foreground color
+ * against the background color.
+ */
+export function blendOnBg(color: string, opacity: number, background: string = colors.bg): string {
+  const alpha = Math.max(0, Math.min(1, opacity));
+  const [fr, fg, fb] = hexToRgb(color);
+  const [br, bg, bb] = hexToRgb(background);
+  return rgbToHex([
+    Math.round(fr * alpha + br * (1 - alpha)),
+    Math.round(fg * alpha + bg * (1 - alpha)),
+    Math.round(fb * alpha + bb * (1 - alpha)),
+  ]);
+}

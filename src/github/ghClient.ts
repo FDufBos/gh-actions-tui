@@ -160,6 +160,35 @@ export function createGhClient() {
     await runGh(["pr", "view", String(prNumber), "-R", `${owner}/${repo}`, "--web"]);
   }
 
+  async function rerunFailedWorkflowRuns(owner: string, repo: string, runIds: number[]): Promise<number> {
+    const uniqueRunIds = [...new Set(runIds)].filter((id) => Number.isFinite(id) && id > 0);
+    let requested = 0;
+    const errors: string[] = [];
+
+    for (const runId of uniqueRunIds) {
+      try {
+        await runGh([
+          "api",
+          "-X",
+          "POST",
+          `repos/${owner}/${repo}/actions/runs/${runId}/rerun-failed-jobs`,
+        ]);
+        requested += 1;
+      } catch (error) {
+        errors.push(`run ${runId}: ${normalizeError(error)}`);
+      }
+    }
+
+    if (requested === 0 && errors.length) {
+      throw new Error(errors.join("; "));
+    }
+    if (errors.length) {
+      throw new Error(`requested ${requested}/${uniqueRunIds.length} reruns; ${errors.join("; ")}`);
+    }
+
+    return requested;
+  }
+
   async function getPrDetailMeta(
     owner: string,
     repo: string,
@@ -186,6 +215,7 @@ export function createGhClient() {
     getChecksForHeadSha,
     getWorkflowRunsForHeadSha,
     openPrInBrowser,
+    rerunFailedWorkflowRuns,
   };
 }
 

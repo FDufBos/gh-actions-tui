@@ -6,6 +6,7 @@ import type { CheckCategory } from "../domain/types";
 import { createGhClient } from "../github/ghClient";
 import { MainScreen } from "../ui/layout/MainScreen";
 import { parseRepoInput } from "../utils/repoInput";
+import type { DetailData } from "./queries";
 import { useBootstrapQuery, useDetailQuery, usePrsQuery, useRollupQueries } from "./queries";
 import { initialState, prKey, reducer, rollupCacheKey } from "./state";
 
@@ -145,6 +146,11 @@ export function App() {
       return;
     }
 
+    if (input === "f") {
+      void rerunFailedActions();
+      return;
+    }
+
     if (key.tab) {
       dispatch({ type: "set-focus", focus: state.focus === "overview" ? "detail" : "overview" });
       return;
@@ -195,6 +201,58 @@ export function App() {
       await saveConfig({ repos, refreshSeconds });
       dispatch({ type: "update-repos", repos, refreshSeconds });
       dispatch({ type: "set-info", infoText: "Saved watched repositories" });
+    } catch (error) {
+      dispatch({ type: "set-error", errorText: normalizeError(error) });
+    }
+  }
+
+  async function rerunFailedActions() {
+    if (!selectedPr) {
+      dispatch({ type: "set-info", infoText: "Select a PR to rerun failed actions" });
+      return;
+    }
+
+    const failedRunIds = (detailData?.runs ?? [])
+      .filter((run) => run.category === "failed")
+      .map((run) => run.id);
+
+    if (!failedRunIds.length) {
+      dispatch({ type: "set-info", infoText: "No failed workflow runs to rerun" });
+      return;
+    }
+
+    try {
+      const requested = await client.rerunFailedWorkflowRuns(selectedPr.owner, selectedPr.repo, failedRunIds);
+      const suffix = requested === 1 ? "" : "s";
+      dispatch({ type: "set-info", infoText: `Requested rerun for ${requested} failed workflow run${suffix}` });
+
+      const detailKey = ["detail", selectedPr.owner, selectedPr.repo, selectedPr.number] as const;
+      const failedRunIdSet = new Set(failedRunIds);
+      queryClient.setQueryData<DetailData>(detailKey, (current) => {
+        if (!current) return current;
+        const runs = current.runs.map((run) => {
+          if (!failedRunIdSet.has(run.id)) {
+            return run;
+          }
+          return {
+            ...run,
+            status: "requested",
+            conclusion: "",
+            category: "pending" as const,
+          };
+        });
+        return {
+          ...current,
+          runs,
+          rollupCategory: "running",
+        };
+      });
+
+      void queryClient.invalidateQueries({ queryKey: ["rollup"] });
+      void queryClient.invalidateQueries({ queryKey: ["prs"] });
+      setTimeout(() => {
+        void queryClient.invalidateQueries({ queryKey: detailKey });
+      }, 4000);
     } catch (error) {
       dispatch({ type: "set-error", errorText: normalizeError(error) });
     }

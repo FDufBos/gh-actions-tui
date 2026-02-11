@@ -1,7 +1,7 @@
 import { Box, Text } from "ink";
 import type { CheckCategory, PullRequest } from "../../domain/types";
 import { compactRelativeTime } from "../../utils/timers";
-import { colors } from "../theme";
+import { blendOnBg, colors } from "../theme";
 import { statusColor, statusToken } from "./status";
 
 type RollupMap = Partial<Record<string, CheckCategory>>;
@@ -14,11 +14,11 @@ type Props = {
   focused: boolean;
 };
 
-export function OverviewList({ prs, selectedIndex, rollups }: Props) {
+export function OverviewList({ prs, selectedIndex, rollups, focused }: Props) {
   if (prs.length === 0) {
     return (
       <Box flexDirection="column" paddingX={1} minHeight={6}>
-        <Text color={colors.dim}>No PRs yet. Press s to set watched repositories.</Text>
+        <Text color={focused ? colors.dim : colors.border}>No PRs yet. Press s to set watched repositories.</Text>
       </Box>
     );
   }
@@ -30,23 +30,26 @@ export function OverviewList({ prs, selectedIndex, rollups }: Props) {
         const rollup = rollups[rollupKey];
         const dotColor = rollup ? statusColor(rollup) : colors.dim;
         const isCursor = index === selectedIndex;
+        const isFocused = focused;
         const cursor = isCursor ? ">" : " ";
+        const rowColor = isFocused ? (isCursor ? colors.text : colors.dim) : colors.border;
+        const rowDotColor = isFocused ? dotColor : blendOnBg(dotColor, 0.2);
         const time = compactRelativeTime(pr.updatedAt);
         const draftTag = pr.draft ? "[draft] " : "";
 
         return (
           <Box key={`${pr.owner}/${pr.repo}#${pr.number}`}>
-            <Text color={isCursor ? colors.text : colors.dim}>
+            <Text color={rowColor}>
               {cursor}{"  "}
             </Text>
-            <Text color={dotColor}>{statusToken("pending")}</Text>
+            <Text color={rowDotColor}>{statusToken("pending")}</Text>
             <Text>{" "}</Text>
             <Box flexGrow={1}>
-              <Text color={isCursor ? colors.text : colors.dim}>
+              <Text color={rowColor}>
                 {draftTag}{pr.title}
               </Text>
             </Box>
-            <Text color={colors.dim}>{" "}{time}</Text>
+            <Text color={isFocused ? colors.dim : colors.border}>{" "}{time}</Text>
           </Box>
         );
       })}

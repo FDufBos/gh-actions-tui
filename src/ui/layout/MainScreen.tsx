@@ -89,7 +89,9 @@ function SplashScreen({ message }: { message: string }) {
 /* ─── Main view (PR list + detail) ────────────────────────────── */
 
 export function MainScreen(props: Props) {
+  const mainPaddingLeft = 3;
   const width = Math.min(process.stdout.columns ?? MAX_TUI_WIDTH_CHARS, MAX_TUI_WIDTH_CHARS);
+  const contentWidth = Math.max(1, width - mainPaddingLeft);
 
   // Full-screen: repo input
   if (props.repoInputOpen) {
@@ -104,13 +106,22 @@ export function MainScreen(props: Props) {
   // Normal dashboard
   return (
     <Box width="100%">
-      <Box flexDirection="column" width={width} paddingTop={2} paddingLeft={3}>
+      <Box flexDirection="column" width={width} paddingTop={2} paddingLeft={mainPaddingLeft}>
         <StatusBar
           repos={props.repos}
           lastRefreshAt={props.lastRefreshAt}
           loadingOverview={props.loadingOverview}
           loadingDetail={props.loadingDetail}
         />
+        {props.errorText ? (
+          <Box paddingX={1}>
+            <Text color={colors.red}>{props.errorText}</Text>
+          </Box>
+        ) : props.infoText ? (
+          <Box paddingX={1}>
+            <Text color={colors.dim}>{props.infoText}</Text>
+          </Box>
+        ) : null}
         <Box height={1} />
         <OverviewList
           prs={props.prs}
@@ -120,7 +131,7 @@ export function MainScreen(props: Props) {
           focused={props.focus === "overview" && !props.repoInputOpen}
         />
         <Box height={1} />
-        <Border width={width} />
+        <Border width={contentWidth} />
         <Box height={1} />
         <DetailPanel
           selectedPr={props.selectedPr}
@@ -133,6 +144,12 @@ export function MainScreen(props: Props) {
           cursor={props.detailCursor}
           rollupCategory={props.rollupCategory}
         />
+        <Box height={1} />
+        <Box paddingX={1}>
+          <Text color={colors.dim}>
+            [tab] switch pane  |  [r] refresh  |  [f] rerun failed actions |  s: set repos  |  q: quit
+          </Text>
+        </Box>
       </Box>
     </Box>
   );
