@@ -1,16 +1,10 @@
 # gh-actions-tui (TypeScript + Bun + Ink)
 
-Single-screen terminal UI for monitoring GitHub checks on your authored pull requests.
-
-## UI Layout
-
-- Header: auth/scope/refresh status
-- Overview box (top): open PRs authored by your account in watched repos
-- Details box (bottom): empty until you select a PR, then shows checks and workflow runs
+TUI for monitoring GitHub checks on your authored pull requests.
 
 ## Requirements
 
-- Bun 1.3+
+- Node.js 20+
 - GitHub CLI (`gh`) installed and authenticated
   - `gh auth login`
   - account/token with `repo` and `workflow` access
@@ -18,21 +12,16 @@ Single-screen terminal UI for monitoring GitHub checks on your authored pull req
 ## Install
 
 ```bash
-cd ~/Apps/gh-actions-tui
-bun install
+npm i -g gh-actions-tui
 ```
 
 ## Run
 
 ```bash
-bun run start
+gh-actions-tui
 ```
 
-## Build
 
-```bash
-bun run build
-```
 
 Output: `dist/gh-actions-tui.js`
 
@@ -54,11 +43,9 @@ Config is saved to:
 - `j/k` or arrows: move cursor
 - `enter`: select highlighted PR and load details
 - `tab`: switch focus between overview/detail
-- `[` or `]`: switch detail tab (`checks` / `runs`)
 - `r`: manual refresh
 - `o`: open selected PR in browser
 - `s`: edit watched repositories inline
-- `esc`: cancel repo input mode
 - `q` or `ctrl+c`: quit
 
 ## Status Categories
@@ -71,24 +58,11 @@ Config is saved to:
 - `passed`
 - `skipped`
 
-Overview rollup logic:
+Overview rollup statuses:
 
-- any in-progress -> in-progress
-- else any failed -> failed
-- else -> passed
-
-## Validation and Smoke
-
-```bash
-bun run smoke
-```
-
-This runs:
-
-- `bun run typecheck`
-- `bun test`
-
-## Troubleshooting
+- any in-progress -> in-progress (yellow)
+- else any failed -> failed (red)
+- else -> passed (green)
 
 - Auth errors: run `gh auth status`
 - Missing PRs: verify watched repo scope and your authored-open PRs exist
