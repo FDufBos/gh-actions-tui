@@ -1,15 +1,24 @@
 {
-  "name": "gh-actions-tui",
-  "module": "src/cli.ts",
+  "name": "ghatui",
+  "version": "0.1.0",
+  "description": "Terminal UI for monitoring GitHub Actions on your authored pull requests.",
   "type": "module",
-  "private": true,
+  "private": false,
+  "bin": {
+    "ghatui": "./dist/gh-actions-tui.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "dev": "bun --watch src/cli.ts",
     "start": "bun src/cli.ts",
-    "build": "bun build src/cli.ts --target bun --outfile dist/gh-actions-tui.js",
+    "build": "bun build src/cli.ts --target node --outfile dist/gh-actions-tui.js && node -e \"const fs=require('node:fs');const p='dist/gh-actions-tui.js';const shebang='#!/usr/bin/env node\\n';const s=fs.readFileSync(p,'utf8');if(!s.startsWith('#!/usr/bin/env node')) fs.writeFileSync(p,shebang+s);\" && chmod +x dist/gh-actions-tui.js",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "smoke": "bun run typecheck && bun test"
+    "smoke": "bun run typecheck && bun test",
+    "prepack": "bun run build && bun run smoke"
   },
   "devDependencies": {
     "@types/bun": "latest",
