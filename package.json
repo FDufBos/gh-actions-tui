@@ -1,0 +1,29 @@
+{
+  "name": "gh-actions-tui",
+  "module": "src/cli.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun --watch src/cli.ts",
+    "start": "bun src/cli.ts",
+    "build": "bun build src/cli.ts --target bun --outfile dist/gh-actions-tui.js",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "smoke": "bun run typecheck && bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^25.2.3",
+    "@types/react": "^19.2.13"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.20",
+    "ink": "^6.7.0",
+    "ink-spinner": "^5.0.0",
+    "react": "^19.2.4",
+    "react-devtools-core": "^7.0.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
