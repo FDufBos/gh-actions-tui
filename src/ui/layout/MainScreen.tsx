@@ -23,7 +23,6 @@ type Props = {
   checks: import("../../domain/types").Check[];
   runs: import("../../domain/types").WorkflowRun[];
   reviewDecision: ReviewDecision;
-  detailTab: "checks" | "runs";
   detailCursor: number;
   focus: "overview" | "detail";
   repoInputOpen: boolean;
@@ -140,7 +139,6 @@ export function MainScreen(props: Props) {
           reviewDecision={props.reviewDecision}
           loading={props.loadingDetail}
           focused={props.focus === "detail" && !props.repoInputOpen}
-          tab={props.detailTab}
           cursor={props.detailCursor}
           rollupCategory={props.rollupCategory}
         />

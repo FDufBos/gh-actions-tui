@@ -156,14 +156,6 @@ export function App() {
       return;
     }
 
-    if (input === "[" || input === "]") {
-      dispatch({
-        type: "set-detail-tab",
-        tab: state.detailTab === "checks" ? "runs" : "checks",
-      });
-      return;
-    }
-
     if (state.focus === "overview") {
       if (key.upArrow || input === "k") {
         dispatch({ type: "move-overview-cursor", delta: -1, prCount: prs.length });
@@ -178,16 +170,10 @@ export function App() {
     }
 
     if (key.upArrow || input === "k") {
-      const listLength =
-        state.detailTab === "checks"
-          ? (detailData?.checks.length ?? 0)
-          : (detailData?.runs.length ?? 0);
+      const listLength = (detailData?.checks.length ?? 0) + (detailData?.runs.length ?? 0);
       dispatch({ type: "move-detail-cursor", delta: -1, listLength });
     } else if (key.downArrow || input === "j") {
-      const listLength =
-        state.detailTab === "checks"
-          ? (detailData?.checks.length ?? 0)
-          : (detailData?.runs.length ?? 0);
+      const listLength = (detailData?.checks.length ?? 0) + (detailData?.runs.length ?? 0);
       dispatch({ type: "move-detail-cursor", delta: 1, listLength });
     }
   });
@@ -278,7 +264,6 @@ export function App() {
       checks={detailData?.checks ?? []}
       runs={detailData?.runs ?? []}
       reviewDecision={detailData?.reviewDecision ?? "UNKNOWN"}
-      detailTab={state.detailTab}
       detailCursor={state.detailCursor}
       focus={state.focus}
       repoInputOpen={state.repoInputOpen}

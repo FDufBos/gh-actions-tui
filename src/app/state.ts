@@ -1,6 +1,5 @@
 import type { PullRequest } from "../domain/types";
 
-export type DetailTab = "checks" | "runs";
 export type FocusArea = "overview" | "detail";
 
 export type AppState = {
@@ -9,7 +8,6 @@ export type AppState = {
   refreshSeconds: number;
   selectedPrIndex: number;
   selectedPrKey: string | null;
-  detailTab: DetailTab;
   focus: FocusArea;
   detailCursor: number;
   repoInputOpen: boolean;
@@ -26,7 +24,6 @@ export type AppAction =
   | { type: "toggle-repo-input"; open: boolean }
   | { type: "set-repo-input-value"; value: string }
   | { type: "set-focus"; focus: FocusArea }
-  | { type: "set-detail-tab"; tab: DetailTab }
   | { type: "move-detail-cursor"; delta: number; listLength: number }
   | { type: "select-current-pr"; prs: PullRequest[] }
   | { type: "update-repos"; repos: string[]; refreshSeconds: number }
@@ -39,7 +36,6 @@ export function initialState(): AppState {
     refreshSeconds: 5,
     selectedPrIndex: 0,
     selectedPrKey: null,
-    detailTab: "checks",
     focus: "overview",
     detailCursor: 0,
     repoInputOpen: false,
@@ -82,8 +78,6 @@ export function reducer(state: AppState, action: AppAction): AppState {
       return { ...state, repoInputValue: action.value };
     case "set-focus":
       return { ...state, focus: action.focus };
-    case "set-detail-tab":
-      return { ...state, detailTab: action.tab, detailCursor: 0 };
     case "move-detail-cursor": {
       if (!action.listLength) return state;
       const next = clamp(state.detailCursor + action.delta, 0, action.listLength - 1);

@@ -13,7 +13,6 @@ type Props = {
   reviewDecision: ReviewDecision;
   loading: boolean;
   focused: boolean;
-  tab: "checks" | "runs";
   cursor: number;
   rollupCategory: import("../../domain/types").CheckCategory;
 };
@@ -37,21 +36,20 @@ export function DetailPanel(props: Props) {
   const allItems: { category: CheckCategory }[] = [...props.checks, ...props.runs];
   const summary = summaryByCategory(allItems);
 
-  const listItems: DetailRow[] = (
-    props.tab === "checks"
-      ? props.checks.map((check, i) => ({
-          key: `check-${check.name}-${i}`,
-          label: check.name,
-          category: check.category,
-          required: check.required,
-        }))
-      : props.runs.map((run, i) => ({
-          key: `run-${run.id}-${i}`,
-          label: `${run.displayName || run.name} (#${run.id})`,
-          category: run.category,
-          required: false,
-        }))
-  ).sort((a, b) => displayRank(a.category) - displayRank(b.category));
+  const listItems: DetailRow[] = [
+    ...props.checks.map((check, i) => ({
+      key: `check-${check.name}-${i}`,
+      label: check.name,
+      category: check.category,
+      required: check.required,
+    })),
+    ...props.runs.map((run, i) => ({
+      key: `run-${run.id}-${i}`,
+      label: `${run.displayName || run.name} (#${run.id})`,
+      category: run.category,
+      required: false,
+    })),
+  ].sort((a, b) => displayRank(a.category) - displayRank(b.category));
 
   const safeCursor = Math.max(0, Math.min(props.cursor, Math.max(0, listItems.length - 1)));
   const inProgressCount = summary.running + summary.queued + summary.pending;
@@ -107,7 +105,7 @@ export function DetailPanel(props: Props) {
             <Spinner type="dots" /> loading…
           </Text>
         ) : listItems.length === 0 ? (
-          <Text color={isFocused ? colors.dim : colors.border}>No data for this tab.</Text>
+          <Text color={isFocused ? colors.dim : colors.border}>No checks or workflow runs yet.</Text>
         ) : (
           visibleItems.map((item) => {
             const isSelected = isFocused && listItems.indexOf(item) === safeCursor;
