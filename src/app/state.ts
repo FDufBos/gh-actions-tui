@@ -21,10 +21,13 @@ export type AppAction =
   | { type: "set-info"; infoText: string }
   | { type: "set-error"; errorText: string }
   | { type: "move-overview-cursor"; delta: number; prCount: number }
+  | { type: "set-overview-index"; index: number; prCount: number }
+  | { type: "select-pr-at-index"; index: number; prs: PullRequest[] }
   | { type: "toggle-repo-input"; open: boolean }
   | { type: "set-repo-input-value"; value: string }
   | { type: "set-focus"; focus: FocusArea }
   | { type: "move-detail-cursor"; delta: number; listLength: number }
+  | { type: "set-detail-cursor"; index: number; listLength: number }
   | { type: "select-current-pr"; prs: PullRequest[] }
   | { type: "update-repos"; repos: string[]; refreshSeconds: number }
   | { type: "reconcile-pr-index"; prs: PullRequest[] };
@@ -68,6 +71,21 @@ export function reducer(state: AppState, action: AppAction): AppState {
       const nextIndex = clamp(state.selectedPrIndex + action.delta, 0, action.prCount - 1);
       return { ...state, selectedPrIndex: nextIndex };
     }
+    case "set-overview-index": {
+      if (!action.prCount) return state;
+      const nextIndex = clamp(action.index, 0, action.prCount - 1);
+      return { ...state, selectedPrIndex: nextIndex };
+    }
+    case "select-pr-at-index": {
+      const selected = action.prs[action.index];
+      if (!selected) return state;
+      return {
+        ...state,
+        selectedPrIndex: clamp(action.index, 0, Math.max(0, action.prs.length - 1)),
+        selectedPrKey: prKey(selected),
+        detailCursor: 0,
+      };
+    }
     case "toggle-repo-input":
       return {
         ...state,
@@ -81,6 +99,11 @@ export function reducer(state: AppState, action: AppAction): AppState {
     case "move-detail-cursor": {
       if (!action.listLength) return state;
       const next = clamp(state.detailCursor + action.delta, 0, action.listLength - 1);
+      return { ...state, detailCursor: next };
+    }
+    case "set-detail-cursor": {
+      if (!action.listLength) return state;
+      const next = clamp(action.index, 0, action.listLength - 1);
       return { ...state, detailCursor: next };
     }
     case "select-current-pr": {

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Box, Text } from "ink";
 import Spinner from "ink-spinner";
 import { formatRelativeTime } from "../../utils/timers";
@@ -11,6 +12,12 @@ type Props = {
 };
 
 export function StatusBar(props: Props) {
+  const [, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   const isLoading = props.loadingOverview || props.loadingDetail;
   const repoLabel = props.repos.length > 0 ? props.repos.join(", ") : "—";
 

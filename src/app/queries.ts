@@ -86,6 +86,7 @@ export function useDetailQuery(client: GhClient, selectedPr: PullRequest | undef
       return { checks: checksWithRequired, runs, reviewDecision: meta.reviewDecision, rollupCategory };
     },
     enabled: !!selectedPr,
+    refetchInterval: 15_000,
     staleTime: 0,
     retry: 1,
   });

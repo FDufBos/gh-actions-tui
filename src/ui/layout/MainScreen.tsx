@@ -21,7 +21,6 @@ type Props = {
   selectedPrKey: string | null;
   selectedPr: PullRequest | undefined;
   checks: import("../../domain/types").Check[];
-  runs: import("../../domain/types").WorkflowRun[];
   reviewDecision: ReviewDecision;
   detailCursor: number;
   focus: "overview" | "detail";
@@ -89,6 +88,7 @@ function SplashScreen({ message }: { message: string }) {
 
 export function MainScreen(props: Props) {
   const mainPaddingLeft = 3;
+  const detailPanelHeight = 17;
   const width = Math.min(process.stdout.columns ?? MAX_TUI_WIDTH_CHARS, MAX_TUI_WIDTH_CHARS);
   const contentWidth = Math.max(1, width - mainPaddingLeft);
 
@@ -132,20 +132,21 @@ export function MainScreen(props: Props) {
         <Box height={1} />
         <Border width={contentWidth} />
         <Box height={1} />
-        <DetailPanel
-          selectedPr={props.selectedPr}
-          checks={props.checks}
-          runs={props.runs}
-          reviewDecision={props.reviewDecision}
-          loading={props.loadingDetail}
-          focused={props.focus === "detail" && !props.repoInputOpen}
-          cursor={props.detailCursor}
-          rollupCategory={props.rollupCategory}
-        />
+        <Box height={detailPanelHeight}>
+          <DetailPanel
+            selectedPr={props.selectedPr}
+            checks={props.checks}
+            reviewDecision={props.reviewDecision}
+            loading={props.loadingDetail}
+            focused={props.focus === "detail" && !props.repoInputOpen}
+            cursor={props.detailCursor}
+            rollupCategory={props.rollupCategory}
+          />
+        </Box>
         <Box height={1} />
         <Box paddingX={1}>
           <Text color={colors.dim}>
-            [tab] switch pane  |  [r] refresh  |  [f] rerun failed actions |  s: set repos  |  q: quit
+            [tab] switch pane  |  [r] refresh  |  [s] set repos  |  [q] quit
           </Text>
         </Box>
       </Box>

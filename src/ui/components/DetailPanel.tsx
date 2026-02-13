@@ -1,7 +1,7 @@
 import { Box, Text } from "ink";
 import Spinner from "ink-spinner";
 import { displayRank, summaryByCategory } from "../../domain/rollup";
-import type { Check, CheckCategory, PullRequest, ReviewDecision } from "../../domain/types";
+import type { Check, PullRequest, ReviewDecision } from "../../domain/types";
 import { blendOnBg, colors } from "../theme";
 import { ProgressBar } from "./ProgressBar";
 import { reviewColor, reviewLabel, statusColor, statusToken } from "./status";
@@ -9,7 +9,6 @@ import { reviewColor, reviewLabel, statusColor, statusToken } from "./status";
 type Props = {
   selectedPr: PullRequest | undefined;
   checks: Check[];
-  runs: import("../../domain/types").WorkflowRun[];
   reviewDecision: ReviewDecision;
   loading: boolean;
   focused: boolean;
@@ -30,11 +29,7 @@ export function DetailPanel(props: Props) {
     );
   }
 
-  const pr = props.selectedPr;
-
-  // Combined summary across checks AND runs so the progress bar reflects everything
-  const allItems: { category: CheckCategory }[] = [...props.checks, ...props.runs];
-  const summary = summaryByCategory(allItems);
+  const summary = summaryByCategory(props.checks);
 
   const listItems: DetailRow[] = [
     ...props.checks.map((check, i) => ({
@@ -42,12 +37,6 @@ export function DetailPanel(props: Props) {
       label: check.name,
       category: check.category,
       required: check.required,
-    })),
-    ...props.runs.map((run, i) => ({
-      key: `run-${run.id}-${i}`,
-      label: `${run.displayName || run.name} (#${run.id})`,
-      category: run.category,
-      required: false,
     })),
   ].sort((a, b) => displayRank(a.category) - displayRank(b.category));
 
@@ -70,28 +59,26 @@ export function DetailPanel(props: Props) {
 
   const rvLabel = reviewLabel(props.reviewDecision);
   const rvColor = reviewColor(props.reviewDecision);
-  const headerColor = isFocused ? colors.text : colors.border;
   const linkColor = isFocused ? colors.dim : colors.border;
   const rollupBaseColor = statusColor(props.rollupCategory);
   const rollupTokenColor = isFocused ? rollupBaseColor : faded(rollupBaseColor);
 
   return (
-    <Box flexDirection="column" paddingX={1}>
-      {/* Header row — PR title + review + open link */}
-      <Box>
-        <Text color={rollupTokenColor}>{statusToken(props.rollupCategory)}</Text>
-        <Text>{" "}</Text>
-        <Text color={headerColor} bold={isFocused}>
-          {pr.title}
-        </Text>
-        {rvLabel ? (
-          <Text>
-            {"  "}
-            <Text color={isFocused ? rvColor : faded(rvColor)}>{rvLabel}</Text>
-          </Text>
-        ) : null}
-        <Box flexGrow={1} />
-        <Text color={linkColor}>[o] Open PR</Text>
+    <Box flexDirection="column" paddingX={1} width="100%">
+      {/* Header row — rollup status + review + open link */}
+      <Box width="100%">
+        <Box flexGrow={1}>
+          <Text color={rollupTokenColor}>{statusToken(props.rollupCategory)}</Text>
+          {rvLabel ? (
+            <Text>
+              {" "}
+              <Text color={isFocused ? rvColor : faded(rvColor)}>{rvLabel}</Text>
+            </Text>
+          ) : null}
+        </Box>
+        <Box flexShrink={0}>
+          <Text color={linkColor}>[f] Rerun failed  |  [o] Open PR</Text>
+        </Box>
       </Box>
 
       {/* Progress bar */}
@@ -105,7 +92,7 @@ export function DetailPanel(props: Props) {
             <Spinner type="dots" /> loading…
           </Text>
         ) : listItems.length === 0 ? (
-          <Text color={isFocused ? colors.dim : colors.border}>No checks or workflow runs yet.</Text>
+          <Text color={isFocused ? colors.dim : colors.border}>No checks yet.</Text>
         ) : (
           visibleItems.map((item) => {
             const isSelected = isFocused && listItems.indexOf(item) === safeCursor;
