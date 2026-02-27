@@ -12,13 +12,13 @@ TUI for monitoring GitHub checks on your authored pull requests.
 ## Install
 
 ```bash
-npm i -g gh-actions-tui
+npm i -g ghatui
 ```
 
 ## Run
 
 ```bash
-gh-actions-tui
+ghatui
 ```
 
 

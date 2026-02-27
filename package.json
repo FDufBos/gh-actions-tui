@@ -1,7 +1,26 @@
 {
   "name": "ghatui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Terminal UI for monitoring GitHub Actions on your authored pull requests.",
+  "author": "fdufbos",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FDufBos/gh-actions-tui.git"
+  },
+  "homepage": "https://github.com/FDufBos/gh-actions-tui#readme",
+  "bugs": {
+    "url": "https://github.com/FDufBos/gh-actions-tui/issues"
+  },
+  "keywords": [
+    "github",
+    "cli",
+    "tui",
+    "github-actions",
+    "terminal",
+    "workflow",
+    "pull-request"
+  ],
   "type": "module",
   "private": false,
   "bin": {
@@ -9,12 +28,13 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "dev": "bun --watch src/cli.ts",
     "start": "bun src/cli.ts",
-    "build": "bun build src/cli.ts --target node --outfile dist/gh-actions-tui.js && node -e \"const fs=require('node:fs');const p='dist/gh-actions-tui.js';const shebang='#!/usr/bin/env node\\n';const s=fs.readFileSync(p,'utf8');if(!s.startsWith('#!/usr/bin/env node')) fs.writeFileSync(p,shebang+s);\" && chmod +x dist/gh-actions-tui.js",
+    "build": "bun build src/cli.ts --target node --outfile dist/gh-actions-tui.js && node scripts/fix-shebang.js && chmod +x dist/gh-actions-tui.js",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "smoke": "bun run typecheck && bun test",
