@@ -1,4 +1,4 @@
-# gh-actions-tui (TypeScript + Bun + Ink)
+# gh-actions-tui
 
 TUI for monitoring GitHub checks on your authored pull requests.
 
